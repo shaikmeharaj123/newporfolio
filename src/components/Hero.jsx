@@ -411,7 +411,10 @@ function HeroStats({ stats, mounted }) {
   const [animatedStats, setAnimatedStats] = useState(stats.map(() => 0));
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || stats.length === 0) {
+      setAnimatedStats(stats.map(() => 0));
+      return;
+    }
 
     const targetValues = stats.map((s) => parseFloat(s.value) || 0);
     const duration = 2000;
@@ -444,7 +447,7 @@ function HeroStats({ stats, mounted }) {
       {stats.map((stat, index) => (
         <div key={stat.label} className="text-center group cursor-default">
           <div className="font-display text-3xl font-bold text-gold group-hover:scale-110 transition-transform duration-300 inline-block relative">
-            {animatedStats[index].toFixed(1)}
+            {(animatedStats[index] ?? 0).toFixed(1)}
             <span className="absolute -top-2 -right-4 text-lg">+</span>
           </div>
           <div className="font-mono text-xs text-mist tracking-widest uppercase mt-1 group-hover:text-ice transition-colors duration-300">
