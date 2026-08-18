@@ -122,21 +122,21 @@
 
 [data-theme="white"] {
   --color-void: #ffffff;
-  --color-ink: #f6f8fb;
-  --color-panel: #ffffff;
-  --color-border: #dbe3ee;
-  --color-page-text: #162033;
-  --color-accent: #1d4ed8;
-  --color-accent-light: #2563eb;
-  --color-accent-dim: #93c5fd;
-  --color-ice: #0f172a;
-  --color-mist: #475569;
-  --color-ghost: #94a3b8;
-  --color-glow: rgba(29,78,216,0.12);
-  --color-particle: rgba(29,78,216,0.55);
+  --color-ink: #f4f4f5;
+  --color-panel: #fafafa;
+  --color-border: #d1d5db;
+  --color-page-text: #111111;
+  --color-accent: #111111;
+  --color-accent-light: #3f3f46;
+  --color-accent-dim: #6b7280;
+  --color-ice: #111111;
+  --color-mist: #4b5563;
+  --color-ghost: #9ca3af;
+  --color-glow: rgba(17,17,17,0.08);
+  --color-particle: rgba(17,17,17,0.5);
   --color-switcher-bg: rgba(255,255,255,0.82);
-  --color-switcher-border: rgba(15,23,42,0.12);
-  --color-theme-active: #0f172a;
+  --color-switcher-border: rgba(17,17,17,0.12);
+  --color-theme-active: #111111;
 }
 
 @layer base {
@@ -150,16 +150,40 @@
   body {
     background-color: var(--color-void);
     color: var(--color-page-text);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-optical-sizing: auto;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     overflow-x: hidden;
     cursor: none;
     transition: background-color 0.5s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
   }
 
   ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-track { background: var(--color-void); }
   ::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 10px; }
   ::selection { background: rgba(201,168,76,0.2); color: var(--color-accent-light); }
+}
+
+[data-theme="white"] ::selection {
+  background: rgba(17,17,17,0.12);
+  color: #111111;
 }
 
 @layer utilities {
@@ -197,6 +221,47 @@
     scroll-snap-type: none;
     overscroll-behavior: contain;
   }
+}
+
+[data-theme="white"] .text-gradient-gold {
+  background: linear-gradient(135deg, #111111 0%, #4b5563 50%, #111111 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="white"] .border-glow-gold {
+  box-shadow: 0 0 18px rgba(17,17,17,0.06), inset 0 0 18px rgba(17,17,17,0.03);
+}
+
+[data-theme="white"] .skill-category {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+  box-shadow: 0 12px 32px rgba(17,17,17,0.03);
+}
+
+[data-theme="white"] .skill-category:hover {
+  border-color: #111111 !important;
+  background: #fafafa !important;
+}
+
+[data-theme="white"] .skill-category-label {
+  color: #111111 !important;
+}
+
+[data-theme="white"] .skill-chip {
+  color: #111111 !important;
+  border-color: #d1d5db !important;
+  background: #ffffff !important;
+}
+
+[data-theme="white"] .skill-chip:hover {
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+}
+
+[data-theme="white"] .skill-category-dot {
+  box-shadow: 0 0 0 3px rgba(17,17,17,0.04);
 }
 
 /* ═════════════════════════════
@@ -274,7 +339,7 @@
 }
 
 [data-theme="white"] .bg-white {
-  background-color: var(--color-ice) !important;
+  background-color: var(--color-void) !important;
 }
 
 [data-theme="white"] .theme-dot[data-t="white"] {

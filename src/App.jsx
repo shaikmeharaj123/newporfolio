@@ -6,6 +6,7 @@ import Blog from './components/Blog'
 import Contact from './components/Contact'
 import Experience from './components/Experience'
 import Projects from './components/Projects'
+import SeoManager from './components/SeoManager'
 import ScrollToTop from './components/ScrollToTop'
 import Skills from './components/Skills'
 import useSmoothAnchorScroll from './hooks/useSmoothAnchorScroll'
@@ -18,6 +19,7 @@ export default function App() {
     <BrowserRouter>
       <DataProvider>
         <ScrollToTop />
+        <SeoManager />
         <AppShell>
           <Routes>
             <Route path="/" element={<PortfolioPage />} />

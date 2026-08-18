@@ -2,6 +2,46 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://portfolio-api-sage-nine.vercel.app/api';
+const CACHE_KEY = 'portfolio-cache-v2';
+const CACHE_TTL_MS = 1000 * 60 * 60 * 6;
+
+const safeStorage = {
+  read() {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed?.cachedAt || Date.now() - parsed.cachedAt > CACHE_TTL_MS) {
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  },
+  write(payload) {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(CACHE_KEY, JSON.stringify({
+        ...payload,
+        cachedAt: Date.now(),
+      }));
+    } catch {
+      // Ignore storage quota or privacy mode failures.
+    }
+  },
+  clear() {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.removeItem(CACHE_KEY);
+    } catch {
+      // Ignore storage failures.
+    }
+  },
+};
+
+const cached = safeStorage.read();
 
 // Create axios instance
 const apiClient = axios.create({
@@ -106,17 +146,58 @@ export const fetchSocialLinks = createAsyncThunk(
   }
 );
 
-const initialState = {
-  personalInfo: {},
-  experience: [],
-  projects: [],
-  skills: {},
-  blogs: [],
-  education: [],
-  stats: [],
-  socialLinks: [],
-  loading: false,
-  error: null,
+export const fetchPortfolioMeta = createAsyncThunk(
+  'portfolio/fetchPortfolioMeta',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get('/portfolio/meta');
+      return response.data.data || {};
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch portfolio meta');
+    }
+  }
+);
+
+const initialState = cached
+  ? {
+      personalInfo: cached.personalInfo || {},
+      experience: cached.experience || [],
+      projects: cached.projects || [],
+      skills: cached.skills || {},
+      blogs: cached.blogs || [],
+      education: cached.education || [],
+      stats: cached.stats || [],
+      socialLinks: cached.socialLinks || [],
+      cacheVersion: cached.cacheVersion || null,
+      loading: false,
+      error: null,
+    }
+  : {
+      personalInfo: {},
+      experience: [],
+      projects: [],
+      skills: {},
+      blogs: [],
+      education: [],
+      stats: [],
+      socialLinks: [],
+      cacheVersion: null,
+      loading: false,
+      error: null,
+    };
+
+const persistState = (state) => {
+  safeStorage.write({
+    personalInfo: state.personalInfo,
+    experience: state.experience,
+    projects: state.projects,
+    skills: state.skills,
+    blogs: state.blogs,
+    education: state.education,
+    stats: state.stats,
+    socialLinks: state.socialLinks,
+    cacheVersion: state.cacheVersion,
+  });
 };
 
 const portfolioSlice = createSlice({
@@ -126,129 +207,138 @@ const portfolioSlice = createSlice({
     resetError: (state) => {
       state.error = null;
     },
+    clearPortfolioCache: (state) => {
+      safeStorage.clear();
+      state.personalInfo = {};
+      state.experience = [];
+      state.projects = [];
+      state.skills = {};
+      state.blogs = [];
+      state.education = [];
+      state.stats = [];
+      state.socialLinks = [];
+      state.cacheVersion = null;
+    },
   },
   extraReducers: (builder) => {
-    // Personal Info
+    const startLoading = (state) => {
+      state.loading = true;
+      state.error = null;
+    };
+
+    const stopLoading = (state) => {
+      state.loading = false;
+    };
+
     builder
-      .addCase(fetchPersonalInfo.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchPersonalInfo.pending, startLoading)
       .addCase(fetchPersonalInfo.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.personalInfo = action.payload;
+        persistState(state);
       })
       .addCase(fetchPersonalInfo.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Experience
     builder
-      .addCase(fetchExperience.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchExperience.pending, startLoading)
       .addCase(fetchExperience.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.experience = action.payload;
+        persistState(state);
       })
       .addCase(fetchExperience.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Projects
     builder
-      .addCase(fetchProjects.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchProjects.pending, startLoading)
       .addCase(fetchProjects.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.projects = action.payload;
+        persistState(state);
       })
       .addCase(fetchProjects.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Skills
     builder
-      .addCase(fetchSkills.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchSkills.pending, startLoading)
       .addCase(fetchSkills.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.skills = action.payload;
+        persistState(state);
       })
       .addCase(fetchSkills.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Blogs
     builder
-      .addCase(fetchBlogs.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchBlogs.pending, startLoading)
       .addCase(fetchBlogs.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.blogs = action.payload;
+        persistState(state);
       })
       .addCase(fetchBlogs.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Education
     builder
-      .addCase(fetchEducation.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchEducation.pending, startLoading)
       .addCase(fetchEducation.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.education = action.payload;
+        persistState(state);
       })
       .addCase(fetchEducation.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Stats
     builder
-      .addCase(fetchStats.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchStats.pending, startLoading)
       .addCase(fetchStats.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.stats = action.payload;
+        persistState(state);
       })
       .addCase(fetchStats.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.error = action.payload;
       });
 
-    // Social Links
     builder
-      .addCase(fetchSocialLinks.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchSocialLinks.pending, startLoading)
       .addCase(fetchSocialLinks.fulfilled, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
         state.socialLinks = action.payload;
+        persistState(state);
       })
       .addCase(fetchSocialLinks.rejected, (state, action) => {
-        state.loading = false;
+        stopLoading(state);
+        state.error = action.payload;
+      });
+
+    builder
+      .addCase(fetchPortfolioMeta.fulfilled, (state, action) => {
+        const nextVersion = action.payload?.version || null;
+        if (nextVersion && state.cacheVersion !== nextVersion) {
+          state.cacheVersion = nextVersion;
+          persistState(state);
+        }
+      })
+      .addCase(fetchPortfolioMeta.rejected, (state, action) => {
         state.error = action.payload;
       });
   },
 });
 
-export const { resetError } = portfolioSlice.actions;
+export const { resetError, clearPortfolioCache } = portfolioSlice.actions;
 export default portfolioSlice.reducer;

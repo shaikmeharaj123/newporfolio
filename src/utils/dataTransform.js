@@ -2,8 +2,22 @@
  * Transform API response data to match the expected format in resume.js
  */
 
+const buildResumeDownloadUrl = (resumeUrl, resumeName = "") => {
+  if (!resumeUrl) return "/resume.pdf";
+  if (resumeUrl.includes("fl_attachment:")) return resumeUrl;
+  if (!resumeUrl.includes("/upload/")) return resumeUrl;
+
+  const fileName = resumeName || resumeUrl.split("/").pop() || "download";
+  return resumeUrl.replace(
+    "/upload/",
+    `/upload/fl_attachment:${encodeURIComponent(fileName)}/`
+  );
+};
+
 export const transformPersonalInfo = (apiData) => {
   if (!apiData) return {};
+  const resumeUrl = apiData.resumeUrl || "/resume.pdf";
+  const resumeDownloadUrl = buildResumeDownloadUrl(resumeUrl, apiData.resumeName);
   return {
     name: apiData.name || "",
     title: apiData.title || "",
@@ -12,8 +26,14 @@ export const transformPersonalInfo = (apiData) => {
     phone: apiData.phone || "",
     email: apiData.email || "",
     profileImage: apiData.profileImage || "/profile.jpg",
-    resumeUrl: apiData.resumeUrl || "/resume.pdf",
+    resumeUrl,
+    resumeDownloadUrl,
+    resumeName: apiData.resumeName || "",
     summary: apiData.summary || "",
+    seoTitle: apiData.seoTitle || "",
+    seoDescription: apiData.seoDescription || "",
+    seoKeywords: apiData.seoKeywords || "",
+    ogImage: apiData.ogImage || apiData.profileImage || "",
   };
 };
 
@@ -46,8 +66,16 @@ export const transformProjects = (apiDataArray) => {
       color: item.color || "#6366f1",
       icon: item.icon || "💼",
       panels: Array.isArray(item.panels) ? item.panels : [],
-      image: item.image || item.coverImage || "",
+      images: Array.isArray(item.images) ? item.images : [],
+      image: item.image || item.coverImage || item.images?.[0] || "",
       link: item.link || item.url || "",
+      github: item.github || "",
+      live: item.live || "",
+      playStore: item.playStore || "",
+      figma: item.figma || "",
+      seoTitle: item.seoTitle || "",
+      seoDescription: item.seoDescription || "",
+      seoKeywords: item.seoKeywords || "",
     }));
 };
 

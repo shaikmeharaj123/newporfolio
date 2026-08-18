@@ -16,7 +16,7 @@ function SkillCategory({ category, items, isVisible, delay }) {
 
   return (
     <div
-      className="border border-[var(--color-border)] bg-[var(--color-panel)] rounded-sm p-6 hover:border-opacity-50 transition-all duration-300 group"
+      className="skill-category border border-[var(--color-border)] bg-[var(--color-panel)] rounded-sm p-6 hover:border-opacity-50 transition-all duration-300 group"
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
@@ -24,8 +24,8 @@ function SkillCategory({ category, items, isVisible, delay }) {
       }}
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-        <span className="font-mono text-xs tracking-widest uppercase" style={{ color }}>
+        <div className="skill-category-dot w-2 h-2 rounded-full" style={{ background: color }} />
+        <span className="skill-category-label font-mono text-xs tracking-widest uppercase" style={{ color }}>
           {category}
         </span>
       </div>
@@ -34,7 +34,7 @@ function SkillCategory({ category, items, isVisible, delay }) {
         {items.map((skill, i) => (
           <span
             key={skill}
-            className="font-mono text-xs px-3 py-1.5 border rounded-sm transition-all duration-200 hover:scale-105"
+            className="skill-chip font-mono text-xs px-3 py-1.5 border rounded-sm transition-all duration-200 hover:scale-105"
             style={{
               color: color + 'cc',
               borderColor: color + '30',
@@ -124,12 +124,12 @@ export default function Skills({ preview = false, limit = 3 }) {
                   >
                     <span className="text-xl">{item.icon}</span>
                     <div>
-                      <div className="font-body text-sm font-medium text-ice">{item.platform}</div>
+                <div className="font-body text-sm font-medium text-ice">{item.platform}</div>
                       <div className="font-mono text-xs text-mist">{item.type}</div>
-                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+            </div>
             </div>
           )}
         </div>

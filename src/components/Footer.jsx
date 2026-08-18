@@ -15,10 +15,11 @@ export default function Footer() {
 
         <div className="flex items-center gap-4">
           <a
-            href={`mailto:${personalInfo.email}`}
+            href={personalInfo.resumeDownloadUrl || personalInfo.resumeUrl}
+            download
             className="font-mono text-xs text-mist hover:text-gold transition-colors"
           >
-            {personalInfo.email}
+            Download Resume
           </a>
         </div>
       </div>

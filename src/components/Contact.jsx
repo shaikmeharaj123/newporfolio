@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useData } from '../context/DataContext'
 import { useScrollReveal } from '../hooks/useScrollReveal'
+import contactAPI from '../api/contactAPI'
 
 export default function Contact() {
   const { personalInfo } = useData()
   const { ref, isVisible } = useScrollReveal()
   const [copied, setCopied] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitState, setSubmitState] = useState({ type: '', message: '' })
   const [form, setForm] = useState({
     name: '',
     email: '',
+    subject: '',
     message: '',
   })
 
@@ -23,13 +27,41 @@ export default function Contact() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    setSubmitting(true)
+    setSubmitState({ type: '', message: '' })
 
-    const subject = encodeURIComponent(`Portfolio enquiry from ${form.name || 'a visitor'}`)
-    const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`)
+    try {
+      await contactAPI.sendContactMessage({
+        name: form.name,
+        email: form.email,
+        subject: form.subject || `Portfolio enquiry from ${form.name || 'a visitor'}`,
+        message: form.message,
+        source: 'newportfolio website',
+        page: window.location.pathname,
+      })
 
-    window.location.href = `mailto:${personalInfo.email}?subject=${subject}&body=${body}`
+      setSubmitState({
+        type: 'success',
+        message: 'Your message was sent successfully. I will get back to you soon.',
+      })
+      setForm({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      })
+    } catch (error) {
+      setSubmitState({
+        type: 'error',
+        message:
+          error.response?.data?.message ||
+          'Could not send your message right now. Please try email instead.',
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const contactItems = [
@@ -152,7 +184,7 @@ export default function Contact() {
               <span className="group-hover:translate-x-1 transition-transform">-&gt;</span>
             </a>
             <a
-              href={personalInfo.resumeUrl}
+              href={personalInfo.resumeDownloadUrl || personalInfo.resumeUrl}
               download
               className="mt-4 inline-flex items-center gap-4 border border-gold/40 text-gold font-mono font-bold text-sm px-8 py-4 rounded-sm hover:bg-gold hover:text-void transition-all duration-300"
             >
@@ -190,6 +222,17 @@ export default function Contact() {
               </label>
             </div>
 
+            <label className="block mb-4">
+              <span className="font-mono text-xs text-mist tracking-widest uppercase">Subject</span>
+              <input
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+                className="mt-2 w-full bg-[var(--color-void)] border border-[var(--color-border)] rounded-sm px-4 py-3 text-ice outline-none focus:border-gold transition-colors"
+                placeholder="Project inquiry, collaboration, or role..."
+              />
+            </label>
+
             <label className="block mb-5">
               <span className="font-mono text-xs text-mist tracking-widest uppercase">Message</span>
               <textarea
@@ -205,10 +248,19 @@ export default function Contact() {
 
             <button
               type="submit"
-              className="w-full md:w-auto bg-gold text-void font-mono font-bold text-sm px-8 py-4 rounded-sm hover:bg-gold-light transition-all duration-300"
+              disabled={submitting}
+              className="w-full md:w-auto bg-gold text-void font-mono font-bold text-sm px-8 py-4 rounded-sm hover:bg-gold-light transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Send Message
+              {submitting ? 'Sending...' : 'Send Message'}
             </button>
+
+            {submitState.message && (
+              <p
+                className={`mt-4 text-sm font-medium ${submitState.type === 'success' ? 'text-green-400' : 'text-red-400'}`}
+              >
+                {submitState.message}
+              </p>
+            )}
           </form>
         </div>
       </div>

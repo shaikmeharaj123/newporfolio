@@ -9,6 +9,7 @@ import {
   fetchEducation,
   fetchStats,
   fetchSocialLinks,
+  fetchPortfolioMeta,
 } from '../store/slices/portfolioSlice';
 import {
   transformPersonalInfo,
@@ -36,12 +37,12 @@ export const DataProvider = ({ children }) => {
     education: rawEducation,
     stats: rawStats,
     socialLinks: rawSocialLinks,
+    cacheVersion,
     loading,
     error,
   } = useSelector((state) => state.portfolio);
 
-  // Fetch data on mount
-  useEffect(() => {
+  const fetchAllPortfolioData = () => {
     dispatch(fetchPersonalInfo());
     dispatch(fetchExperience());
     dispatch(fetchProjects());
@@ -50,7 +51,30 @@ export const DataProvider = ({ children }) => {
     dispatch(fetchEducation());
     dispatch(fetchStats());
     dispatch(fetchSocialLinks());
-  }, [dispatch]);
+  };
+
+  // Fetch data on mount, but render cached state immediately if available.
+  useEffect(() => {
+    const checkAndRefresh = async () => {
+      try {
+        const meta = await dispatch(fetchPortfolioMeta()).unwrap();
+        const hasCache = Boolean(cacheVersion || Object.keys(rawPersonalInfo || {}).length || rawProjects.length || rawExperience.length);
+
+        if (!hasCache || (meta?.version && meta.version !== cacheVersion)) {
+          fetchAllPortfolioData();
+        }
+      } catch {
+        if (!cacheVersion) {
+          fetchAllPortfolioData();
+        }
+      }
+    };
+
+    checkAndRefresh();
+
+    const intervalId = window.setInterval(checkAndRefresh, 15000);
+    return () => window.clearInterval(intervalId);
+  }, [dispatch, cacheVersion, rawPersonalInfo, rawProjects, rawExperience]);
 
   // Transform data to match original format
   const transformedPersonalInfo = transformPersonalInfo(rawPersonalInfo);

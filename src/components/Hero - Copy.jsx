@@ -111,7 +111,7 @@ export default function Hero() {
                 </span>
               </a>
               <a
-                href={personalInfo.resumeUrl}
+                href={personalInfo.resumeDownloadUrl || personalInfo.resumeUrl}
                 download
                 className="group relative inline-flex items-center gap-3 border border-gold/40 text-gold font-mono text-sm px-8 py-4 rounded-sm hover:bg-gold hover:text-void transition-all duration-300 overflow-hidden"
               >
