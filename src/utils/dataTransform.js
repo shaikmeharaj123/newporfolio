@@ -10,7 +10,7 @@ const buildResumeDownloadUrl = (resumeUrl, resumeName = "") => {
   const fileName = resumeName || resumeUrl.split("/").pop() || "download";
   return resumeUrl.replace(
     "/upload/",
-    `/upload/fl_attachment:${encodeURIComponent(fileName)}/`
+    `/upload/`
   );
 };
 
